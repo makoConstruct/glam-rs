@@ -21,6 +21,7 @@ std = []
 
 # enable additional glam checks if debug assertions are enabled
 debug-glam-assert = []
+
 # always enable additional glam checks
 glam-assert = []
 
@@ -42,6 +43,9 @@ cuda = []
 # This should NOT be enabled by intermediate libraries, deferring the decision to
 # the end binary build instead.
 fast-math = []
+
+# experimental nightly portable-simd support
+std-simd = []
 
 [dependencies]
 approx = { version = "0.5", optional = true, default-features = false }

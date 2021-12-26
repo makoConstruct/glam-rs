@@ -9,13 +9,13 @@ use crate::{DMat3, DQuat, DVec3, DVec4, EulerRot, Mat3, Quat, Vec3, Vec3A, Vec4}
 
 #[cfg(all(
     target_feature = "sse2",
-    not(feature = "scalar-math"),
+    not(any(feature = "scalar-math", feature = "std-simd")),
     target_arch = "x86"
 ))]
 use core::arch::x86::*;
 #[cfg(all(
     target_feature = "sse2",
-    not(feature = "scalar-math"),
+    not(any(feature = "scalar-math", feature = "std-simd")),
     target_arch = "x86_64"
 ))]
 use core::arch::x86_64::*;
@@ -729,14 +729,17 @@ macro_rules! impl_mat4_traits {
     };
 }
 
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+type InnerF32 = Columns4<std::simd::f32x4>;
+
+#[cfg(all(target_feature = "sse2", not(any(feature = "scalar-math", feature = "std-simd"))))]
 type InnerF32 = Columns4<__m128>;
 
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "simd128", not(any(feature = "scalar-math", feature = "std-simd"))))]
 type InnerF32 = Columns4<v128>;
 
 #[cfg(any(
-    not(any(target_feature = "sse2", target_feature = "simd128")),
+    not(any(target_feature = "sse2", target_feature = "simd128", feature = "std-simd")),
     feature = "scalar-math"
 ))]
 type InnerF32 = Columns4<XYZW<f32>>;

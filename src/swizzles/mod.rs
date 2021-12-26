@@ -13,22 +13,22 @@ mod uvec4_impl_scalar;
 mod vec2_impl_scalar;
 mod vec3_impl_scalar;
 #[cfg(any(
-    not(any(target_feature = "sse2", target_feature = "simd128")),
+    not(any(target_feature = "sse2", target_feature = "simd128", feature = "std-simd")),
     feature = "scalar-math"
 ))]
 mod vec3a_impl_scalar;
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "sse2", not(any(feature = "scalar-math", feature = "std-simd"))))]
 mod vec3a_impl_sse2;
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "simd128", not(any(feature = "scalar-math", feature = "std-simd"))))]
 mod vec3a_impl_wasm32;
 #[cfg(any(
-    not(any(target_feature = "sse2", target_feature = "simd128")),
+    not(any(target_feature = "sse2", target_feature = "simd128", feature = "std-simd")),
     feature = "scalar-math"
 ))]
 mod vec4_impl_scalar;
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "sse2", not(any(feature = "scalar-math", feature = "std-simd"))))]
 mod vec4_impl_sse2;
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "simd128", not(any(feature = "scalar-math", feature = "std-simd"))))]
 mod vec4_impl_wasm32;
 mod vec_traits;
 

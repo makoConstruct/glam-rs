@@ -16,3 +16,5 @@ mod scalar;
 mod sse2;
 #[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
 mod wasm32;
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+mod std_simd;
