@@ -1,5 +1,4 @@
-use core::mem::MaybeUninit;
-use std::simd::*;
+use std::simd::{*, Which::*};
 
 use crate::core::{
     storage::{Columns2, Columns3, Columns4, XY, XYZ},
@@ -85,17 +84,17 @@ impl Matrix2x2<f32, XY<f32>> for f32x4 {
 
     #[inline]
     fn mul_scalar(&self, other: f32) -> Self {
-        f32x4_mul(*self, f32x4_splat(other))
+        f32x4::mul(*self, f32x4::splat(other))
     }
 
     #[inline]
     fn add_matrix(&self, other: &Self) -> Self {
-        f32x4_add(*self, *other)
+        f32x4::add(*self, *other)
     }
 
     #[inline]
     fn sub_matrix(&self, other: &Self) -> Self {
-        f32x4_sub(*self, *other)
+        f32x4::sub(*self, *other)
     }
 }
 
@@ -107,21 +106,21 @@ impl FloatMatrix2x2<f32, XY<f32>> for f32x4 {
 
     #[inline]
     fn neg_matrix(&self) -> Self {
-        f32x4_neg(*self)
+        f32x4::neg(*self)
     }
 
     #[inline]
     fn inverse(&self) -> Self {
         const SIGN: f32x4 = const_f32x4!([1.0, -1.0, -1.0, 1.0]);
         let abcd = *self;
-        let dcba = i32x4_shuffle::<3, 2, 5, 4>(abcd, abcd);
-        let prod = f32x4_mul(abcd, dcba);
-        let sub = f32x4_sub(prod, i32x4_shuffle::<1, 1, 5, 5>(prod, prod));
-        let det = i32x4_shuffle::<0, 0, 4, 4>(sub, sub);
-        let tmp = f32x4_div(SIGN, det);
+        let dcba = simd_swizzle!(abcd, [3, 2, 1, 0]);
+        let prod = f32x4::mul(abcd, dcba);
+        let sub = f32x4::sub(prod, simd_swizzle!(prod, [1, 1, 1, 1]));
+        let det = simd_swizzle!(sub, [0, 0, 0, 0]);
+        let tmp = f32x4::div(SIGN, det);
         glam_assert!(tmp.is_finite());
-        let dbca = i32x4_shuffle::<3, 1, 6, 4>(abcd, abcd);
-        f32x4_mul(dbca, tmp)
+        let dbca = simd_swizzle!(abcd, [3, 1, 2, 0]);
+        f32x4::mul(dbca, tmp)
     }
 }
 
@@ -175,13 +174,13 @@ impl Matrix3x3<f32, f32x4> for Columns3<f32x4> {
 
     #[inline]
     fn transpose(&self) -> Self {
-        let tmp0 = i32x4_shuffle::<0, 1, 4, 5>(self.x_axis, self.y_axis);
-        let tmp1 = i32x4_shuffle::<2, 3, 6, 7>(self.x_axis, self.y_axis);
+        let tmp0 = simd_swizzle!(self.x_axis, self.y_axis, [First(0), First(1), Second(0), Second(1)]);
+        let tmp1 = simd_swizzle!(self.x_axis, self.y_axis, [First(2), First(3), Second(2), Second(3)]);
 
         Self {
-            x_axis: i32x4_shuffle::<0, 2, 4, 4>(tmp0, self.z_axis),
-            y_axis: i32x4_shuffle::<1, 3, 5, 5>(tmp0, self.z_axis),
-            z_axis: i32x4_shuffle::<0, 2, 6, 6>(tmp1, self.z_axis),
+            x_axis: simd_swizzle!(tmp0, self.z_axis, [First(0), First(2), Second(0), Second(0)]),
+            y_axis: simd_swizzle!(tmp0, self.z_axis, [First(1), First(3), Second(1), Second(1)]),
+            z_axis: simd_swizzle!(tmp1, self.z_axis, [First(0), First(2), Second(2), Second(2)]),
         }
     }
 }
