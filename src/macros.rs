@@ -39,17 +39,24 @@ macro_rules! const_m128 {
     };
 }
 
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "sse2", not(any(feature = "scalar-math", feature = "std-simd"))))]
 macro_rules! const_f32x4 {
     ($fx4:expr) => {
         unsafe { $crate::cast::Vec4Cast { fx4: $fx4 }.m128 }
     };
 }
 
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "simd128", not(any(feature = "scalar-math", feature = "std-simd"))))]
 macro_rules! const_f32x4 {
     ($fx4:expr) => {
         unsafe { $crate::cast::Vec4Cast { fx4: $fx4 }.v128 }
+    };
+}
+
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+macro_rules! const_f32x4 {
+    ($fx4:expr) => {
+        unsafe { $crate::cast::Vec4Cast { fx4: $fx4 }.f32x4 }
     };
 }
 

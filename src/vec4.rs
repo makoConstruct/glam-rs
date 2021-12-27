@@ -31,9 +31,6 @@ use core::arch::x86_64::*;
 #[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
 use core::arch::wasm32::v128;
 
-#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
-use std::simd::f32x4;
-
 macro_rules! impl_vec4_common_methods {
     ($t:ty, $vec2:ident, $vec3:ident, $vec4:ident, $mask:ident, $inner:ident) => {
         /// All zeroes.

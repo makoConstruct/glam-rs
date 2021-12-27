@@ -15,6 +15,8 @@ pub union Vec4Cast {
     pub m128: __m128,
     #[cfg(target_feature = "simd128")]
     pub v128: v128,
+    #[cfg(feature = "std-simd")]
+    pub f32x4: std::simd::f32x4,
     pub fx4: [f32; 4],
     pub fx2x2: [[f32; 2]; 2],
     pub v4: Vec4,
