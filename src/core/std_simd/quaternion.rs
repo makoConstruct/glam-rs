@@ -1,9 +1,10 @@
 use std::simd::*;
-
+use core::ops::*;
 use crate::core::{
     storage::XYZ,
     traits::{quaternion::Quaternion, scalar::*, vector::*},
 };
+use super::wrapper::*;
 
 impl Quaternion<f32> for f32x4 {
     type SIMDVector3 = f32x4;
@@ -11,7 +12,7 @@ impl Quaternion<f32> for f32x4 {
     #[inline(always)]
     fn conjugate(self) -> Self {
         const SIGN: f32x4 = const_f32x4!([-1.0, -1.0, -1.0, 1.0]);
-        f32x4::mul(self, SIGN)
+        f32x4_mul(self, SIGN)
     }
 
     #[inline]
@@ -25,9 +26,9 @@ impl Quaternion<f32> for f32x4 {
         let dot = Vector4::dot_into_vec(start, end);
         // Calculate the bias, if the dot product is positive or zero, there is no bias
         // but if it is negative, we want to flip the 'end' rotation XYZW components
-        let bias = f32x4::bitand(dot, NEG_ZERO);
-        let interpolated = f32x4::add(
-            f32x4::mul(f32x4::sub(f32x4::bitxor(end, bias), start), f32x4::splat(s)),
+        let bias = f32x4_bitand(dot, NEG_ZERO);
+        let interpolated = f32x4_add(
+            f32x4_mul(f32x4_sub(f32x4_bitxor(end, bias), start), f32x4_splat(s)),
             start,
         );
         FloatVector4::normalize(interpolated)
@@ -88,25 +89,25 @@ impl Quaternion<f32> for f32x4 {
         let r_zzzz = simd_swizzle!(lhs, [2, 2, 2, 2]);
         let r_wwww = simd_swizzle!(lhs, [3, 3, 3, 3]);
 
-        let lxrw_lyrw_lzrw_lwrw = f32x4::mul(r_wwww, rhs);
+        let lxrw_lyrw_lzrw_lwrw = f32x4_mul(r_wwww, rhs);
         let l_wzyx = simd_swizzle!(rhs, [3, 2, 5, 4]);
 
-        let lwrx_lzrx_lyrx_lxrx = f32x4::mul(r_xxxx, l_wzyx);
+        let lwrx_lzrx_lyrx_lxrx = f32x4_mul(r_xxxx, l_wzyx);
         let l_zwxy = simd_swizzle!(l_wzyx, [1, 0, 7, 6]);
 
-        let lwrx_nlzrx_lyrx_nlxrx = f32x4::mul(lwrx_lzrx_lyrx_lxrx, CONTROL_WZYX);
+        let lwrx_nlzrx_lyrx_nlxrx = f32x4_mul(lwrx_lzrx_lyrx_lxrx, CONTROL_WZYX);
 
-        let lzry_lwry_lxry_lyry = f32x4::mul(r_yyyy, l_zwxy);
+        let lzry_lwry_lxry_lyry = f32x4_mul(r_yyyy, l_zwxy);
         let l_yxwz = simd_swizzle!(l_zwxy, [3, 2, 5, 4]);
 
-        let lzry_lwry_nlxry_nlyry = f32x4::mul(lzry_lwry_lxry_lyry, CONTROL_ZWXY);
+        let lzry_lwry_nlxry_nlyry = f32x4_mul(lzry_lwry_lxry_lyry, CONTROL_ZWXY);
 
-        let lyrz_lxrz_lwrz_lzrz = f32x4::mul(r_zzzz, l_yxwz);
-        let result0 = f32x4::add(lxrw_lyrw_lzrw_lwrw, lwrx_nlzrx_lyrx_nlxrx);
+        let lyrz_lxrz_lwrz_lzrz = f32x4_mul(r_zzzz, l_yxwz);
+        let result0 = f32x4_add(lxrw_lyrw_lzrw_lwrw, lwrx_nlzrx_lyrx_nlxrx);
 
-        let nlyrz_lxrz_lwrz_wlzrz = f32x4::mul(lyrz_lxrz_lwrz_lzrz, CONTROL_YXWZ);
-        let result1 = f32x4::add(lzry_lwry_nlxry_nlyry, nlyrz_lxrz_lwrz_wlzrz);
-        f32x4::add(result0, result1)
+        let nlyrz_lxrz_lwrz_wlzrz = f32x4_mul(lyrz_lxrz_lwrz_lzrz, CONTROL_YXWZ);
+        let result1 = f32x4_add(lzry_lwry_nlxry_nlyry, nlyrz_lxrz_lwrz_wlzrz);
+        f32x4_add(result0, result1)
     }
 
     #[inline]

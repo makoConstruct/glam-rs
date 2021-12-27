@@ -187,7 +187,7 @@ impl<T: NumEx> Vector<T> for XY<T> {
     }
 
     #[inline]
-    fn add_vector(self, other: Self) -> Self {
+    fn add(self, other: Self) -> Self {
         Self {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -195,7 +195,7 @@ impl<T: NumEx> Vector<T> for XY<T> {
     }
 
     #[inline]
-    fn div_vector(self, other: Self) -> Self {
+    fn div(self, other: Self) -> Self {
         Self {
             x: self.x / other.x,
             y: self.y / other.y,
@@ -203,7 +203,7 @@ impl<T: NumEx> Vector<T> for XY<T> {
     }
 
     #[inline]
-    fn mul_vector(self, other: Self) -> Self {
+    fn mul(self, other: Self) -> Self {
         Self {
             x: self.x * other.x,
             y: self.y * other.y,
@@ -219,7 +219,7 @@ impl<T: NumEx> Vector<T> for XY<T> {
     }
 
     #[inline]
-    fn sub_vector(self, other: Self) -> Self {
+    fn sub(self, other: Self) -> Self {
         Self {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -259,7 +259,7 @@ impl<T: NumEx> Vector<T> for XY<T> {
     }
 
     #[inline]
-    fn rem_vector(self, other: Self) -> Self {
+    fn rem(self, other: Self) -> Self {
         Self {
             x: self.x % other.x,
             y: self.y % other.y,
@@ -363,7 +363,7 @@ impl<T: NumEx> Vector<T> for XYZ<T> {
     }
 
     #[inline]
-    fn add_vector(self, other: Self) -> Self {
+    fn add(self, other: Self) -> Self {
         Self {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -372,7 +372,7 @@ impl<T: NumEx> Vector<T> for XYZ<T> {
     }
 
     #[inline]
-    fn div_vector(self, other: Self) -> Self {
+    fn div(self, other: Self) -> Self {
         Self {
             x: self.x / other.x,
             y: self.y / other.y,
@@ -381,7 +381,7 @@ impl<T: NumEx> Vector<T> for XYZ<T> {
     }
 
     #[inline]
-    fn mul_vector(self, other: Self) -> Self {
+    fn mul(self, other: Self) -> Self {
         Self {
             x: self.x * other.x,
             y: self.y * other.y,
@@ -399,7 +399,7 @@ impl<T: NumEx> Vector<T> for XYZ<T> {
     }
 
     #[inline]
-    fn sub_vector(self, other: Self) -> Self {
+    fn sub(self, other: Self) -> Self {
         Self {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -442,7 +442,7 @@ impl<T: NumEx> Vector<T> for XYZ<T> {
     }
 
     #[inline]
-    fn rem_vector(self, other: Self) -> Self {
+    fn rem(self, other: Self) -> Self {
         Self {
             x: self.x % other.x,
             y: self.y % other.y,

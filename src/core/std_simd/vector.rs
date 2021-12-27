@@ -1,122 +1,110 @@
+use core::ops::*;
 use crate::core::{
     storage::{XY, XYZ, XYZW},
     traits::{scalar::*, vector::*},
 };
 use std::simd::*;
+use super::wrapper::*;
 
 #[inline(always)]
-fn f32x4_isnan(v: f32x4) -> f32x4 {
-    f32x4::ne(v, v)
+fn f32x4_isnan(v: f32x4) -> mask32x4 {
+    f32x4::lanes_ne(v, v)
 }
 
 /// Calculates the vector 3 dot product and returns answer in x lane of __m128.
 #[inline(always)]
 fn dot3_in_x(lhs: f32x4, rhs: f32x4) -> f32x4 {
-    let x2_y2_z2_w2 = f32x4::mul(lhs, rhs);
+    let x2_y2_z2_w2 = f32x4_mul(lhs, rhs);
     let y2_0_0_0 = simd_swizzle!(x2_y2_z2_w2, [1, 0, 0, 0]);
     let z2_0_0_0 = simd_swizzle!(x2_y2_z2_w2, [2, 0, 0, 0]);
-    let x2y2_0_0_0 = f32x4::add(x2_y2_z2_w2, y2_0_0_0);
-    f32x4::add(x2y2_0_0_0, z2_0_0_0)
+    let x2y2_0_0_0 = f32x4_add(x2_y2_z2_w2, y2_0_0_0);
+    f32x4_add(x2y2_0_0_0, z2_0_0_0)
 }
 
 /// Calculates the vector 4 dot product and returns answer in x lane of __m128.
 #[inline(always)]
 fn dot4_in_x(lhs: f32x4, rhs: f32x4) -> f32x4 {
-    let x2_y2_z2_w2 = f32x4::mul(lhs, rhs);
+    let x2_y2_z2_w2 = f32x4_mul(lhs, rhs);
     let z2_w2_0_0 = simd_swizzle!(x2_y2_z2_w2, [2, 3, 0, 0]);
-    let x2z2_y2w2_0_0 = f32x4::add(x2_y2_z2_w2, z2_w2_0_0);
+    let x2z2_y2w2_0_0 = f32x4_add(x2_y2_z2_w2, z2_w2_0_0);
     let y2w2_0_0_0 = simd_swizzle!(x2z2_y2w2_0_0, [1, 0, 0, 0]);
-    f32x4::add(x2z2_y2w2_0_0, y2w2_0_0_0)
+    f32x4_add(x2z2_y2w2_0_0, y2w2_0_0_0)
 }
 
-impl MaskVectorConst for f32x4 {
-    const FALSE: f32x4 = const_f32x4!([0.0; 4]);
+impl MaskVectorConst for mask32x4 {
+    const FALSE: mask32x4 = const_mask32x4!([0; 4]);
 }
 
-impl MaskVector for f32x4 {
+impl MaskVector for mask32x4 {
     #[inline(always)]
     fn bitand(self, other: Self) -> Self {
-        f32x4::bitand(self, other)
+        mask32x4_bitand(self, other)
     }
 
     #[inline(always)]
     fn bitor(self, other: Self) -> Self {
-        f32x4::bitor(self, other)
+        mask32x4_bitor(self, other)
     }
 
     #[inline]
     fn not(self) -> Self {
-        f32x4::bitnot(self)
+        mask32x4_not(self)
     }
 }
 
-impl MaskVector3 for f32x4 {
+impl MaskVector3 for mask32x4 {
     #[inline(always)]
     fn new(x: bool, y: bool, z: bool) -> Self {
-        f32x4::from_bits(
-            MaskConst::MASK[x as usize],
-            MaskConst::MASK[y as usize],
-            MaskConst::MASK[z as usize],
-            0,
-        )
+        mask32x4::from_array([x, y, z, false])
     }
 
     #[inline(always)]
     fn bitmask(self) -> u32 {
-        (self.to_bitmask() & 0x7) as u32
+        mask32x4_to_bitmask(self) & 0x7
     }
 
     #[inline(always)]
     fn any(self) -> bool {
-        (self.to_bitmask() & 0x7) != 0
+        (mask32x4_to_bitmask(self) & 0x7) != 0
     }
 
     #[inline(always)]
     fn all(self) -> bool {
-        (self.to_bitmask() & 0x7) == 0x7
+        (mask32x4_to_bitmask(self) & 0x7) == 0x7
     }
 
     #[inline]
     fn into_bool_array(self) -> [bool; 3] {
-        let bitmask = MaskVector3::bitmask(self);
-        [(bitmask & 1) != 0, (bitmask & 2) != 0, (bitmask & 4) != 0]
+        let b = self.to_array();
+        [b[0], b[1], b[2]]
     }
 
     #[inline]
     fn into_u32_array(self) -> [u32; 3] {
-        let bitmask = MaskVector3::bitmask(self);
-        [
-            MaskConst::MASK[(bitmask & 1) as usize],
-            MaskConst::MASK[((bitmask >> 1) & 1) as usize],
-            MaskConst::MASK[((bitmask >> 2) & 1) as usize],
-        ]
+        let i = self.to_int();
+        [i[0] as u32, i[1] as u32, i[2] as u32]
     }
 }
 
-impl MaskVector4 for f32x4 {
+impl MaskVector4 for mask32x4 {
     #[inline(always)]
     fn new(x: bool, y: bool, z: bool, w: bool) -> Self {
-        f32x4::from_bits(
-            MaskConst::MASK[x as usize],
-            MaskConst::MASK[y as usize],
-            MaskConst::MASK[z as usize],
-            MaskConst::MASK[w as usize],
-        )
+        mask32x4::from_array([x, y, z, w])
     }
 
     #[inline(always)]
     fn bitmask(self) -> u32 {
-        self.to_bitmask() as u32
+        mask32x4_to_bitmask(self)
     }
 
     #[inline(always)]
     fn any(self) -> bool {
-        self.to_bitmask() != [0; 4]
+        mask32x4_any(self)
     }
 
     #[inline(always)]
     fn all(self) -> bool {
-        self.to_bitmask() == [0xff; 4]
+        mask32x4_all(self)
     }
 
     #[inline]
@@ -126,7 +114,8 @@ impl MaskVector4 for f32x4 {
 
     #[inline]
     fn into_u32_array(self) -> [u32; 4] {
-        self.to_int() as [u32; 4]
+        let i = self.to_int();
+        [i[0] as u32, i[1] as u32, i[2] as u32, i[3] as u32]
     }
 }
 
@@ -153,11 +142,11 @@ impl Vector4Const for f32x4 {
 }
 
 impl Vector<f32> for f32x4 {
-    type Mask = f32x4;
+    type Mask = mask32x4;
 
     #[inline(always)]
     fn splat(s: f32) -> Self {
-        f32x4::splat(s)
+        f32x4_splat(s)
     }
 
     #[inline(always)]
@@ -167,97 +156,97 @@ impl Vector<f32> for f32x4 {
 
     #[inline(always)]
     fn cmpeq(self, other: Self) -> Self::Mask {
-        f32x4::eq(self, other)
+        f32x4::lanes_eq(self, other)
     }
 
     #[inline(always)]
     fn cmpne(self, other: Self) -> Self::Mask {
-        f32x4::ne(self, other)
+        f32x4::lanes_ne(self, other)
     }
 
     #[inline(always)]
     fn cmpge(self, other: Self) -> Self::Mask {
-        f32x4::ge(self, other)
+        f32x4::lanes_ge(self, other)
     }
 
     #[inline(always)]
     fn cmpgt(self, other: Self) -> Self::Mask {
-        f32x4::gt(self, other)
+        f32x4::lanes_gt(self, other)
     }
 
     #[inline(always)]
     fn cmple(self, other: Self) -> Self::Mask {
-        f32x4::le(self, other)
+        f32x4::lanes_le(self, other)
     }
 
     #[inline(always)]
     fn cmplt(self, other: Self) -> Self::Mask {
-        f32x4::lt(self, other)
+        f32x4::lanes_lt(self, other)
     }
 
     #[inline(always)]
     fn add(self, other: Self) -> Self {
-        f32x4::add(self, other)
+        f32x4_add(self, other)
     }
 
     #[inline(always)]
     fn div(self, other: Self) -> Self {
-        f32x4::div(self, other)
+        f32x4_div(self, other)
     }
 
     #[inline(always)]
     fn mul(self, other: Self) -> Self {
-        f32x4::mul(self, other)
+        f32x4_mul(self, other)
     }
 
     #[inline(always)]
     fn mul_add(self, b: Self, c: Self) -> Self {
-        f32x4::add(f32x4::mul(self, b), c)
+        f32x4_mul_add(self, b, c)
     }
 
     #[inline(always)]
     fn sub(self, other: Self) -> Self {
-        f32x4::sub(self, other)
+        f32x4_sub(self, other)
     }
 
     #[inline(always)]
     fn add_scalar(self, other: f32) -> Self {
-        f32x4::add(self, f32x4::splat(other))
+        f32x4_add(self, f32x4_splat(other))
     }
 
     #[inline(always)]
     fn sub_scalar(self, other: f32) -> Self {
-        f32x4::sub(self, f32x4::splat(other))
+        f32x4_sub(self, f32x4_splat(other))
     }
 
     #[inline(always)]
     fn mul_scalar(self, other: f32) -> Self {
-        f32x4::mul(self, f32x4::splat(other))
+        f32x4_mul(self, f32x4_splat(other))
     }
 
     #[inline(always)]
     fn div_scalar(self, other: f32) -> Self {
-        f32x4::div(self, f32x4::splat(other))
+        f32x4_div(self, f32x4_splat(other))
     }
 
     #[inline(always)]
     fn rem(self, other: Self) -> Self {
-        f32x4::rem(self, other)
+        f32x4_rem(self, other)
     }
 
     #[inline(always)]
     fn rem_scalar(self, other: f32) -> Self {
-        self.rem(f32x4::splat(other))
+        f32x4_rem(self, f32x4_splat(other))
     }
 
     #[inline(always)]
     fn min(self, other: Self) -> Self {
-        f32x4::min(self, other)
+        f32x4_min(self, other)
     }
 
     #[inline(always)]
     fn max(self, other: Self) -> Self {
-        f32x4::max(self, other)
+        f32x4_max(self, other)
     }
 }
 
@@ -385,9 +374,9 @@ impl Vector3<f32> for f32x4 {
         // (self.zxy() * other - self * other.zxy()).zxy()
         let lhszxy = simd_swizzle!(self, [2, 0, 1, 1]);
         let rhszxy = simd_swizzle!(other, [2, 0, 1, 1]);
-        let lhszxy_rhs = f32x4::mul(lhszxy, other);
-        let rhszxy_lhs = f32x4::mul(rhszxy, self);
-        let sub = f32x4::sub(lhszxy_rhs, rhszxy_lhs);
+        let lhszxy_rhs = f32x4_mul(lhszxy, other);
+        let rhszxy_lhs = f32x4_mul(rhszxy, self);
+        let sub = f32x4_sub(lhszxy_rhs, rhszxy_lhs);
         simd_swizzle!(sub, [2, 0, 1, 1])
     }
 
@@ -541,19 +530,19 @@ impl Vector4<f32> for f32x4 {
 impl SignedVector<f32> for f32x4 {
     #[inline(always)]
     fn neg(self) -> Self {
-        f32x4::neg(self)
+        f32x4_neg(self)
     }
 }
 
 impl SignedVector3<f32> for f32x4 {
     #[inline]
     fn abs(self) -> Self {
-        f32x4::abs(self)
+        f32x4_abs(self)
     }
 
     #[inline]
     fn signum(self) -> Self {
-        f32x4::signum(self)
+        f32x4_signum(self)
     }
 }
 
@@ -572,8 +561,8 @@ impl SignedVector4<f32> for f32x4 {
 impl FloatVector3<f32> for f32x4 {
     #[inline]
     fn is_finite(self) -> bool {
-        let m = f32x4::is_finite(self);
-        m[0] == -1 && m[1] == -1 && m[2] == -1
+        let m = f32x4::is_finite(self).bitor(mask32x4::from_array([false, false, false, true]));
+        m.all()
     }
 
     #[inline]
@@ -588,22 +577,22 @@ impl FloatVector3<f32> for f32x4 {
 
     #[inline]
     fn floor(self) -> Self {
-        f32x4::floor(self)
+        f32x4_floor(self)
     }
 
     #[inline]
     fn ceil(self) -> Self {
-        f32x4::ceil(self)
+        f32x4_ceil(self)
     }
 
     #[inline]
     fn round(self) -> Self {
-        f32x4::round(self)
+        f32x4_round(self)
     }
 
     #[inline(always)]
     fn recip(self) -> Self {
-        f32x4::recip(self)
+        f32x4_recip(self)
     }
 
     #[inline]
@@ -619,20 +608,20 @@ impl FloatVector3<f32> for f32x4 {
     #[inline]
     fn length(self) -> f32 {
         let dot = dot3_in_x(self, self);
-        f32x4::sqrt(dot)[0]
+        f32x4_sqrt(dot)[0]
     }
 
     #[inline]
     fn length_recip(self) -> f32 {
         let dot = dot3_in_x(self, self);
-        f32x4::recip(f32x4::sqrt(dot))[0]
+        f32x4_recip(f32x4_sqrt(dot))[0]
     }
 
     #[inline]
     fn normalize(self) -> Self {
-        let length = f32x4::sqrt(Vector3::dot_into_vec(self, self));
+        let length = f32x4_sqrt(Vector3::dot_into_vec(self, self));
         #[allow(clippy::let_and_return)]
-        let normalized = f32x4::div(self, length);
+        let normalized = f32x4_div(self, length);
         glam_assert!(FloatVector3::is_finite(normalized));
         normalized
     }
@@ -641,8 +630,7 @@ impl FloatVector3<f32> for f32x4 {
 impl FloatVector4<f32> for f32x4 {
     #[inline]
     fn is_finite(self) -> bool {
-        let m = f32x4::is_finite(self);
-        m == [-1, -1, -1, -1]
+        f32x4::is_finite(self).all()
     }
 
     #[inline]
@@ -657,22 +645,22 @@ impl FloatVector4<f32> for f32x4 {
 
     #[inline]
     fn floor(self) -> Self {
-        f32x4::floor(self)
+        f32x4_floor(self)
     }
 
     #[inline]
     fn ceil(self) -> Self {
-        f32x4::ceil(self)
+        f32x4_ceil(self)
     }
 
     #[inline]
     fn round(self) -> Self {
-        f32x4::round(self)
+        f32x4_round(self)
     }
 
     #[inline(always)]
     fn recip(self) -> Self {
-        f32x4::div(Self::ONE, self)
+        f32x4_recip(self)
     }
 
     #[inline]
@@ -688,20 +676,20 @@ impl FloatVector4<f32> for f32x4 {
     #[inline]
     fn length(self) -> f32 {
         let dot = dot4_in_x(self, self);
-        f32x4::sqrt(dot)[0]
+        f32x4_sqrt(dot)[0]
     }
 
     #[inline]
     fn length_recip(self) -> f32 {
         let dot = dot4_in_x(self, self);
-        f32x4::recip(f32x4::sqrt(dot))
+        f32x4_recip(f32x4_sqrt(dot))[0]
     }
 
     #[inline]
     fn normalize(self) -> Self {
         let dot = Vector4::dot_into_vec(self, self);
         #[allow(clippy::let_and_return)]
-        let normalized = f32x4::div(self, f32x4::sqrt(dot));
+        let normalized = f32x4_div(self, f32x4_sqrt(dot));
         glam_assert!(FloatVector4::is_finite(normalized));
         normalized
     }

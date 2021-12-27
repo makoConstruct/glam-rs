@@ -60,6 +60,13 @@ macro_rules! const_f32x4 {
     };
 }
 
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+macro_rules! const_mask32x4 {
+    ($ix4:expr) => {
+        unsafe { $crate::cast::IVec4Cast { ix4: $ix4 }.mask32x4 }
+    };
+}
+
 /// Creates a `Vec2` that can be used to initialize a constant value.
 ///
 /// ```

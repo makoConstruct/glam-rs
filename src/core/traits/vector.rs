@@ -89,17 +89,11 @@ pub trait Vector<T>: Sized + Copy + Clone {
     fn cmple(self, other: Self) -> Self::Mask;
     fn cmplt(self, other: Self) -> Self::Mask;
 
-    fn add_vector(self, other: Self) -> Self;
-    fn div_vector(self, other: Self) -> Self;
-    fn mul_vector(self, other: Self) -> Self;
-    fn rem_vector(self, rhs: Self) -> Self;
-    fn sub_vector(self, other: Self) -> Self;
-
-    fn add(self, other: Self) -> Self { self.add_vector(self, other) }
-    fn div(self, other: Self) -> Self { self.div_vector(self, other) }
-    fn mul(self, other: Self) -> Self { self.mul_vector(self, other) }
-    fn rem(self, other: Self) -> Self { self.rem_vector(self, other) }
-    fn sub(self, other: Self) -> Self { self.sub_vector(self, other) }
+    fn add(self, other: Self) -> Self;
+    fn div(self, other: Self) -> Self;
+    fn mul(self, other: Self) -> Self;
+    fn rem(self, rhs: Self) -> Self;
+    fn sub(self, other: Self) -> Self;
 
     fn mul_add(self, a: Self, b: Self) -> Self;
 

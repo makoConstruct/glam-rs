@@ -128,6 +128,8 @@ pub union IVec4Cast {
     pub m128: __m128i,
     #[cfg(target_feature = "simd128")]
     pub v128: v128,
+    #[cfg(feature = "std-simd")]
+    pub mask32x4: std::simd::mask32x4,
     pub ix4: [i32; 4],
     pub ix2x2: [[i32; 2]; 2],
     pub v4: IVec4,

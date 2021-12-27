@@ -8,13 +8,13 @@ use core::{hash, ops::*};
 #[cfg(all(
     target_arch = "x86",
     target_feature = "sse2",
-    not(feature = "scalar-math")
+    not(any(feature = "scalar-math", feature = "std-simd"))
 ))]
 use core::arch::x86::*;
 #[cfg(all(
     target_arch = "x86_64",
     target_feature = "sse2",
-    not(feature = "scalar-math")
+    not(any(feature = "scalar-math", feature = "std-simd"))
 ))]
 use core::arch::x86_64::*;
 
@@ -297,10 +297,12 @@ macro_rules! impl_vec4mask {
 
 // BVec3A /////////////////////////////////////////////////////////////////////////////////////////
 
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "sse2", not(any(feature = "scalar-math", feature = "std-simd"))))]
 type Mask128 = __m128;
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(target_feature = "simd128", not(any(feature = "scalar-math", feature = "std-simd"))))]
 type Mask128 = v128;
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+type Mask128 = std::simd::mask32x4;
 
 /// A 3-dimensional SIMD vector mask.
 ///
