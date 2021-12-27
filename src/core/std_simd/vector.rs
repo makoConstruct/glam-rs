@@ -7,27 +7,27 @@ use core::mem::MaybeUninit;
 
 #[inline(always)]
 fn f32x4_isnan(v: f32x4) -> f32x4 {
-    f32x4_ne(v, v)
+    f32x4::ne(v, v)
 }
 
 /// Calculates the vector 3 dot product and returns answer in x lane of __m128.
 #[inline(always)]
 fn dot3_in_x(lhs: f32x4, rhs: f32x4) -> f32x4 {
-    let x2_y2_z2_w2 = f32x4_mul(lhs, rhs);
-    let y2_0_0_0 = i32x4_shuffle::<1, 0, 0, 0>(x2_y2_z2_w2, x2_y2_z2_w2);
-    let z2_0_0_0 = i32x4_shuffle::<2, 0, 0, 0>(x2_y2_z2_w2, x2_y2_z2_w2);
-    let x2y2_0_0_0 = f32x4_add(x2_y2_z2_w2, y2_0_0_0);
-    f32x4_add(x2y2_0_0_0, z2_0_0_0)
+    let x2_y2_z2_w2 = f32x4::mul(lhs, rhs);
+    let y2_0_0_0 = simd_swizzle!(x2_y2_z2_w2, [1, 0, 0, 0]);
+    let z2_0_0_0 = simd_swizzle!(x2_y2_z2_w2, [2, 0, 0, 0]);
+    let x2y2_0_0_0 = f32x4::add(x2_y2_z2_w2, y2_0_0_0);
+    f32x4::add(x2y2_0_0_0, z2_0_0_0)
 }
 
 /// Calculates the vector 4 dot product and returns answer in x lane of __m128.
 #[inline(always)]
 fn dot4_in_x(lhs: f32x4, rhs: f32x4) -> f32x4 {
-    let x2_y2_z2_w2 = f32x4_mul(lhs, rhs);
-    let z2_w2_0_0 = i32x4_shuffle::<2, 3, 0, 0>(x2_y2_z2_w2, x2_y2_z2_w2);
-    let x2z2_y2w2_0_0 = f32x4_add(x2_y2_z2_w2, z2_w2_0_0);
-    let y2w2_0_0_0 = i32x4_shuffle::<1, 0, 0, 0>(x2z2_y2w2_0_0, x2z2_y2w2_0_0);
-    f32x4_add(x2z2_y2w2_0_0, y2w2_0_0_0)
+    let x2_y2_z2_w2 = f32x4::mul(lhs, rhs);
+    let z2_w2_0_0 = simd_swizzle!(x2_y2_z2_w2, [2, 3, 0, 0]);
+    let x2z2_y2w2_0_0 = f32x4::add(x2_y2_z2_w2, z2_w2_0_0);
+    let y2w2_0_0_0 = simd_swizzle!(x2z2_y2w2_0_0, [1, 0, 0, 0]);
+    f32x4::add(x2z2_y2w2_0_0, y2w2_0_0_0)
 }
 
 impl MaskVectorConst for f32x4 {
@@ -210,7 +210,7 @@ impl Vector<f32> for f32x4 {
 
     #[inline(always)]
     fn add(self, other: Self) -> Self {
-        f32x4_add(self, other)
+        f32x4::add(self, other)
     }
 
     #[inline(always)]
@@ -220,32 +220,32 @@ impl Vector<f32> for f32x4 {
 
     #[inline(always)]
     fn mul(self, other: Self) -> Self {
-        f32x4_mul(self, other)
+        f32x4::mul(self, other)
     }
 
     #[inline(always)]
     fn mul_add(self, b: Self, c: Self) -> Self {
-        f32x4_add(f32x4_mul(self, b), c)
+        f32x4::add(f32x4::mul(self, b), c)
     }
 
     #[inline(always)]
     fn sub(self, other: Self) -> Self {
-        f32x4_sub(self, other)
+        f32x4::sub(self, other)
     }
 
     #[inline(always)]
     fn add_scalar(self, other: f32) -> Self {
-        f32x4_add(self, f32x4_splat(other))
+        f32x4::add(self, f32x4_splat(other))
     }
 
     #[inline(always)]
     fn sub_scalar(self, other: f32) -> Self {
-        f32x4_sub(self, f32x4_splat(other))
+        f32x4::sub(self, f32x4_splat(other))
     }
 
     #[inline(always)]
     fn mul_scalar(self, other: f32) -> Self {
-        f32x4_mul(self, f32x4_splat(other))
+        f32x4::mul(self, f32x4_splat(other))
     }
 
     #[inline(always)]
@@ -256,7 +256,7 @@ impl Vector<f32> for f32x4 {
     #[inline(always)]
     fn rem(self, other: Self) -> Self {
         let n = f32x4_floor(f32x4_div(self, other));
-        f32x4_sub(self, f32x4_mul(n, other))
+        f32x4::sub(self, f32x4::mul(n, other))
     }
 
     #[inline(always)]
@@ -412,9 +412,9 @@ impl Vector3<f32> for f32x4 {
         // (self.zxy() * other - self * other.zxy()).zxy()
         let lhszxy = i32x4_shuffle::<2, 0, 1, 1>(self, self);
         let rhszxy = i32x4_shuffle::<2, 0, 1, 1>(other, other);
-        let lhszxy_rhs = f32x4_mul(lhszxy, other);
-        let rhszxy_lhs = f32x4_mul(rhszxy, self);
-        let sub = f32x4_sub(lhszxy_rhs, rhszxy_lhs);
+        let lhszxy_rhs = f32x4::mul(lhszxy, other);
+        let rhszxy_lhs = f32x4::mul(rhszxy, self);
+        let sub = f32x4::sub(lhszxy_rhs, rhszxy_lhs);
         i32x4_shuffle::<2, 0, 1, 1>(sub, sub)
     }
 
