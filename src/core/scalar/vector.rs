@@ -211,14 +211,6 @@ impl<T: NumEx> Vector<T> for XY<T> {
     }
 
     #[inline]
-    fn mul_add(self, b: Self, c: Self) -> Self {
-        Self {
-            x: self.x * b.x + c.x,
-            y: self.y * b.y + c.y,
-        }
-    }
-
-    #[inline]
     fn sub(self, other: Self) -> Self {
         Self {
             x: self.x - other.x,
@@ -386,15 +378,6 @@ impl<T: NumEx> Vector<T> for XYZ<T> {
             x: self.x * other.x,
             y: self.y * other.y,
             z: self.z * other.z,
-        }
-    }
-
-    #[inline]
-    fn mul_add(self, b: Self, c: Self) -> Self {
-        Self {
-            x: self.x * b.x + c.x,
-            y: self.y * b.y + c.y,
-            z: self.z * b.z + c.z,
         }
     }
 

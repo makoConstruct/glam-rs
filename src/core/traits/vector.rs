@@ -95,8 +95,6 @@ pub trait Vector<T>: Sized + Copy + Clone {
     fn rem(self, rhs: Self) -> Self;
     fn sub(self, other: Self) -> Self;
 
-    fn mul_add(self, a: Self, b: Self) -> Self;
-
     fn scale(self, other: T) -> Self {
         self.mul_scalar(other)
     }
