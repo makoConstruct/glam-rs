@@ -1,5 +1,6 @@
 use core::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Sub};
-use std::simd::{f32x4, mask32x4};
+use std::simd::{f32x4, mask32x4, ToBitMask};
+use std::simd::StdFloat;
 
 #[inline(always)]
 pub(crate) fn f32x4_add(a: f32x4, b: f32x4) -> f32x4 {
@@ -33,7 +34,7 @@ pub(crate) fn f32x4_neg(a: f32x4) -> f32x4 {
 
 #[inline(always)]
 pub(crate) fn f32x4_mul_add(a: f32x4, b: f32x4, c: f32x4) -> f32x4 {
-    f32x4::mul_add(a, b, c)
+    a.mul_add(b, c)
 }
 
 #[inline(always)]
@@ -58,7 +59,7 @@ pub(crate) fn f32x4_signum(a: f32x4) -> f32x4 {
 
 #[inline(always)]
 pub(crate) fn f32x4_floor(a: f32x4) -> f32x4 {
-    f32x4::floor(a)
+    a.floor()
 }
 
 #[inline(always)]
@@ -109,7 +110,7 @@ pub(crate) fn f32x4_bitxor(a: f32x4, b: f32x4) -> f32x4 {
 
 #[inline(always)]
 pub(crate) fn mask32x4_to_bitmask(a: mask32x4) -> u32 {
-    a.to_bitmask()[0] as u32
+    a.to_bitmask() as u32
 }
 
 #[inline(always)]

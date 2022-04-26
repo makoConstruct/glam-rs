@@ -1,17 +1,16 @@
-use std::simd::*;
-use core::ops::*;
+use super::wrapper::*;
 use crate::core::{
     storage::XYZ,
     traits::{quaternion::Quaternion, scalar::*, vector::*},
 };
-use super::wrapper::*;
+use std::simd::*;
 
 impl Quaternion<f32> for f32x4 {
     type SIMDVector3 = f32x4;
 
     #[inline(always)]
     fn conjugate(self) -> Self {
-        const SIGN: f32x4 = const_f32x4!([-1.0, -1.0, -1.0, 1.0]);
+        const SIGN: f32x4 = f32x4::from_array([-1.0, -1.0, -1.0, 1.0]);
         f32x4_mul(self, SIGN)
     }
 
@@ -20,7 +19,7 @@ impl Quaternion<f32> for f32x4 {
         glam_assert!(FloatVector4::is_normalized(self));
         glam_assert!(FloatVector4::is_normalized(end));
 
-        const NEG_ZERO: f32x4 = const_f32x4!([-0.0; 4]);
+        const NEG_ZERO: f32x4 = f32x4::from_array([-0.0; 4]);
         let start = self;
         let end = end;
         let dot = Vector4::dot_into_vec(start, end);
@@ -68,7 +67,11 @@ impl Quaternion<f32> for f32x4 {
             let scale2 = simd_swizzle!(tmp, [1, 1, 1, 1]);
             let theta_sin = simd_swizzle!(tmp, [2, 2, 2, 2]);
 
-            self.mul(scale1).add(end.mul(scale2)).div(theta_sin)
+            // self.mul(scale1).add(end.mul(scale2)).div(theta_sin)
+            f32x4_div(
+                f32x4_add(f32x4_mul(self, scale1), f32x4_mul(end, scale2)),
+                theta_sin,
+            )
         }
     }
 
@@ -80,9 +83,9 @@ impl Quaternion<f32> for f32x4 {
         let lhs = self;
         let rhs = other;
 
-        const CONTROL_WZYX: f32x4 = const_f32x4!([1.0, -1.0, 1.0, -1.0]);
-        const CONTROL_ZWXY: f32x4 = const_f32x4!([1.0, 1.0, -1.0, -1.0]);
-        const CONTROL_YXWZ: f32x4 = const_f32x4!([-1.0, 1.0, 1.0, -1.0]);
+        const CONTROL_WZYX: f32x4 = f32x4::from_array([1.0, -1.0, 1.0, -1.0]);
+        const CONTROL_ZWXY: f32x4 = f32x4::from_array([1.0, 1.0, -1.0, -1.0]);
+        const CONTROL_YXWZ: f32x4 = f32x4::from_array([-1.0, 1.0, 1.0, -1.0]);
 
         let r_xxxx = simd_swizzle!(lhs, [0, 0, 0, 0]);
         let r_yyyy = simd_swizzle!(lhs, [1, 1, 1, 1]);
@@ -118,13 +121,16 @@ impl Quaternion<f32> for f32x4 {
     #[inline]
     fn mul_float4_as_vector3(self, other: f32x4) -> f32x4 {
         glam_assert!(FloatVector4::is_normalized(self));
-        const TWO: f32x4 = const_f32x4!([2.0; 4]);
+        const TWO: f32x4 = f32x4::from_array([2.0; 4]);
         let w = simd_swizzle!(self, [3, 3, 3, 3]);
         let b = self;
         let b2 = Vector3::dot_into_vec(b, b);
-        other
-            .mul(w.mul(w).sub(b2))
-            .add(b.mul(Vector3::dot_into_vec(other, b).mul(TWO)))
-            .add(b.cross(other).mul(w.mul(TWO)))
+        f32x4_add(
+            f32x4_add(
+                f32x4_mul(other, f32x4_sub(f32x4_mul(w, w), b2)),
+                f32x4_mul(b, f32x4_mul(Vector3::dot_into_vec(other, b), TWO)),
+            ),
+            f32x4_mul(b.cross(other), f32x4_mul(w, TWO)),
+        )
     }
 }

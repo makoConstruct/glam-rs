@@ -1,7 +1,11 @@
 use crate::core::traits::vector::*;
 
 #[cfg(all(
-    any(target_feature = "sse2", target_feature = "simd128", feature = "std-simd"),
+    any(
+        target_feature = "sse2",
+        target_feature = "simd128",
+        // feature = "std-simd"
+    ),
     not(feature = "scalar-math")
 ))]
 use crate::BVec4A;
@@ -24,7 +28,10 @@ use core::arch::x86::*;
 #[cfg(all(
     target_arch = "x86_64",
     target_feature = "sse2",
-    not(any(feature = "scalar-math", feature = "std-simd"))
+    not(any(
+        feature = "scalar-math",
+        // feature = "std-simd"
+    ))
 ))]
 use core::arch::x86_64::*;
 
@@ -230,19 +237,35 @@ macro_rules! impl_f32_vec4 {
 }
 
 #[cfg(any(
-    not(any(target_feature = "sse2", target_feature = "simd128", feature = "std-simd")),
+    not(any(
+        target_feature = "sse2",
+        target_feature = "simd128",
+        // feature = "std-simd"
+    )),
     feature = "scalar-math"
 ))]
 type XYZWF32 = XYZW<f32>;
 
-#[cfg(all(target_feature = "sse2", not(any(feature = "scalar-math", feature = "std-simd"))))]
+#[cfg(all(
+    target_feature = "sse2",
+    not(any(
+        feature = "scalar-math",
+        // feature = "std-simd"
+    ))
+))]
 type XYZWF32 = __m128;
 
-#[cfg(all(target_feature = "simd128", not(any(feature = "scalar-math", feature = "std-simd"))))]
+#[cfg(all(
+    target_feature = "simd128",
+    not(any(
+        feature = "scalar-math",
+        // feature = "std-simd"
+    ))
+))]
 type XYZWF32 = v128;
 
-#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
-type XYZWF32 = std::simd::f32x4;
+// #[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+// type XYZWF32 = std::simd::f32x4;
 
 /// A 4-dimensional vector.
 ///

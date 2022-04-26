@@ -1,15 +1,9 @@
-use core::ops::*;
+use super::wrapper::*;
 use crate::core::{
     storage::{XY, XYZ, XYZW},
     traits::{scalar::*, vector::*},
 };
 use std::simd::*;
-use super::wrapper::*;
-
-#[inline(always)]
-fn f32x4_isnan(v: f32x4) -> mask32x4 {
-    f32x4::lanes_ne(v, v)
-}
 
 /// Calculates the vector 3 dot product and returns answer in x lane of __m128.
 #[inline(always)]
@@ -120,25 +114,25 @@ impl MaskVector4 for mask32x4 {
 }
 
 impl VectorConst for f32x4 {
-    const ZERO: f32x4 = const_f32x4!([0.0; 4]);
-    const ONE: f32x4 = const_f32x4!([1.0; 4]);
+    const ZERO: f32x4 = f32x4::from_array([0.0; 4]);
+    const ONE: f32x4 = f32x4::from_array([1.0; 4]);
 }
 
 impl NanConstEx for f32x4 {
-    const NAN: f32x4 = const_f32x4!([f32::NAN; 4]);
+    const NAN: f32x4 = f32x4::from_array([f32::NAN; 4]);
 }
 
 impl Vector3Const for f32x4 {
-    const X: f32x4 = const_f32x4!([1.0, 0.0, 0.0, 0.0]);
-    const Y: f32x4 = const_f32x4!([0.0, 1.0, 0.0, 0.0]);
-    const Z: f32x4 = const_f32x4!([0.0, 0.0, 1.0, 0.0]);
+    const X: f32x4 = f32x4::from_array([1.0, 0.0, 0.0, 0.0]);
+    const Y: f32x4 = f32x4::from_array([0.0, 1.0, 0.0, 0.0]);
+    const Z: f32x4 = f32x4::from_array([0.0, 0.0, 1.0, 0.0]);
 }
 
 impl Vector4Const for f32x4 {
-    const X: f32x4 = const_f32x4!([1.0, 0.0, 0.0, 0.0]);
-    const Y: f32x4 = const_f32x4!([0.0, 1.0, 0.0, 0.0]);
-    const Z: f32x4 = const_f32x4!([0.0, 0.0, 1.0, 0.0]);
-    const W: f32x4 = const_f32x4!([0.0, 0.0, 0.0, 1.0]);
+    const X: f32x4 = f32x4::from_array([1.0, 0.0, 0.0, 0.0]);
+    const Y: f32x4 = f32x4::from_array([0.0, 1.0, 0.0, 0.0]);
+    const Z: f32x4 = f32x4::from_array([0.0, 0.0, 1.0, 0.0]);
+    const W: f32x4 = f32x4::from_array([0.0, 0.0, 0.0, 1.0]);
 }
 
 impl Vector<f32> for f32x4 {
@@ -197,11 +191,6 @@ impl Vector<f32> for f32x4 {
     #[inline(always)]
     fn mul(self, other: Self) -> Self {
         f32x4_mul(self, other)
-    }
-
-    #[inline(always)]
-    fn mul_add(self, b: Self, c: Self) -> Self {
-        f32x4_mul_add(self, b, c)
     }
 
     #[inline(always)]
@@ -346,12 +335,12 @@ impl Vector3<f32> for f32x4 {
 
     #[inline]
     fn min_element(self) -> f32 {
-        self.horizontal_min()
+        self.reduce_min()
     }
 
     #[inline]
     fn max_element(self) -> f32 {
-        self.horizontal_max()
+        self.reduce_max()
     }
 
     #[inline]
@@ -498,12 +487,12 @@ impl Vector4<f32> for f32x4 {
 
     #[inline]
     fn min_element(self) -> f32 {
-        self.horizontal_min()
+        self.reduce_min()
     }
 
     #[inline]
     fn max_element(self) -> f32 {
-        self.horizontal_max()
+        self.reduce_max()
     }
 
     #[inline]
@@ -561,7 +550,10 @@ impl SignedVector4<f32> for f32x4 {
 impl FloatVector3<f32> for f32x4 {
     #[inline]
     fn is_finite(self) -> bool {
-        let m = f32x4::is_finite(self).bitor(mask32x4::from_array([false, false, false, true]));
+        let m = mask32x4_bitor(
+            f32x4::is_finite(self),
+            mask32x4::from_array([false, false, false, true]),
+        );
         m.all()
     }
 
@@ -573,6 +565,11 @@ impl FloatVector3<f32> for f32x4 {
     #[inline(always)]
     fn is_nan_mask(self) -> Self::Mask {
         f32x4::is_nan(self)
+    }
+
+    #[inline(always)]
+    fn mul_add(self, b: Self, c: Self) -> Self {
+        f32x4_mul_add(self, b, c)
     }
 
     #[inline]
@@ -643,6 +640,11 @@ impl FloatVector4<f32> for f32x4 {
         f32x4::is_nan(self)
     }
 
+    #[inline(always)]
+    fn mul_add(self, b: Self, c: Self) -> Self {
+        f32x4_mul_add(self, b, c)
+    }
+
     #[inline]
     fn floor(self) -> Self {
         f32x4_floor(self)
@@ -670,7 +672,12 @@ impl FloatVector4<f32> for f32x4 {
 
     #[inline]
     fn powf(self, n: f32) -> Self {
-        f32x4::from_array([self[0].powf(n), self[1].powf(n), self[2].powf(n), self[3].powf(n)])
+        f32x4::from_array([
+            self[0].powf(n),
+            self[1].powf(n),
+            self[2].powf(n),
+            self[3].powf(n),
+        ])
     }
 
     #[inline]
@@ -742,9 +749,6 @@ impl From<f32x4> for XYZ<f32> {
 impl From<f32x4> for XY<f32> {
     #[inline(always)]
     fn from(v: f32x4) -> XY<f32> {
-        XY {
-            x: v[0],
-            y: v[1],
-        }
+        XY { x: v[0], y: v[1] }
     }
 }

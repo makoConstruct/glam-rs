@@ -245,8 +245,10 @@ The minimum supported Rust version is `1.52.1`.
 #![allow(clippy::upper_case_acronyms)]
 // clippy doesn't like `to_array(&self)`
 #![allow(clippy::wrong_self_convention)]
-
-#![cfg_attr(all(feature = "std-simd", not(feature = "scalar-math")), feature(portable_simd))]
+#![cfg_attr(
+    all(feature = "std-simd", not(feature = "scalar-math")),
+    feature(portable_simd)
+)]
 
 #[macro_use]
 mod macros;
