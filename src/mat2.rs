@@ -11,13 +11,13 @@ use core::ops::{Add, AddAssign, Deref, DerefMut, Mul, MulAssign, Neg, Sub, SubAs
 #[cfg(all(
     target_arch = "x86",
     target_feature = "sse2",
-    not(feature = "scalar-math")
+    not(any(feature = "scalar-math", feature = "std-simd"))
 ))]
 use core::arch::x86::*;
 #[cfg(all(
     target_arch = "x86_64",
     target_feature = "sse2",
-    not(feature = "scalar-math")
+    not(any(feature = "scalar-math", feature = "std-simd"))
 ))]
 use core::arch::x86_64::*;
 
@@ -312,10 +312,19 @@ macro_rules! impl_mat2_traits {
     };
 }
 
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+type InnerF32 = std::simd::f32x4;
+
+#[cfg(all(
+    target_feature = "sse2",
+    not(any(feature = "scalar-math", feature = "std-simd"))
+))]
 type InnerF32 = __m128;
 
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(
+    target_feature = "simd128",
+    not(any(feature = "scalar-math", faeture = "std-simd"))
+))]
 type InnerF32 = v128;
 
 #[cfg(any(
@@ -329,6 +338,7 @@ type InnerF32 = crate::core::storage::Columns2<XY<f32>>;
 #[cfg_attr(
     not(any(
         feature = "scalar-math",
+        feature = "std-simd",
         target_arch = "spirv",
         target_feature = "sse2",
         target_feature = "simd128"
@@ -340,6 +350,7 @@ type InnerF32 = crate::core::storage::Columns2<XY<f32>>;
     all(
         any(
             feature = "scalar-math",
+            feature = "std-simd",
             target_arch = "spirv",
             target_feature = "sse2",
             target_feature = "simd128"

@@ -22,11 +22,14 @@ use core::arch::x86::*;
 #[cfg(all(
     target_arch = "x86_64",
     target_feature = "sse2",
-    not(feature = "scalar-math")
+    not(any(feature = "scalar-math", feature = "std-simd"))
 ))]
 use core::arch::x86_64::*;
 
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(
+    target_feature = "simd128",
+    not(any(feature = "scalar-math", feature = "std-simd"))
+))]
 use core::arch::wasm32::v128;
 
 macro_rules! impl_vec3_common_methods {
@@ -292,13 +295,27 @@ type XYZF32 = XYZ<f32>;
 pub struct Vec3(pub(crate) XYZF32);
 impl_f32_vec3!(vec3, Vec2, Vec3, Vec4, BVec3, XYZF32);
 
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+type XYZF32A = std::simd::f32x4;
+
+#[cfg(all(
+    target_feature = "sse2",
+    not(any(feature = "scalar-math", feature = "std-simd"))
+))]
 type XYZF32A = __m128;
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+
+#[cfg(all(
+    target_feature = "simd128",
+    not(any(feature = "scalar-math", feature = "std-simd"))
+))]
 type XYZF32A = v128;
 
 #[cfg(any(
-    not(any(target_feature = "sse2", target_feature = "simd128")),
+    not(any(
+        target_feature = "sse2",
+        target_feature = "simd128",
+        feature = "std-simd"
+    )),
     feature = "scalar-math"
 ))]
 type XYZF32A = crate::core::storage::XYZF32A16;
@@ -314,7 +331,11 @@ type XYZF32A = crate::core::storage::XYZF32A16;
 pub struct Vec3A(pub(crate) XYZF32A);
 
 #[cfg(all(
-    any(target_feature = "sse2", target_feature = "simd128"),
+    any(
+        target_feature = "sse2",
+        target_feature = "simd128",
+        feature = "std-simd"
+    ),
     not(feature = "scalar-math")
 ))]
 impl_f32_vec3!(vec3a, Vec2, Vec3A, Vec4, BVec3A, XYZF32A);

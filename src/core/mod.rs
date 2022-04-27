@@ -14,10 +14,7 @@ pub mod traits;
 mod scalar;
 #[cfg(all(
     target_feature = "sse2",
-    not(any(
-        feature = "scalar-math",
-        // feature = "std-simd"
-    ))
+    not(any(feature = "scalar-math", feature = "std-simd"))
 ))]
 mod sse2;
 #[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]

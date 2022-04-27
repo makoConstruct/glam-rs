@@ -521,14 +521,14 @@ macro_rules! impl_vecn_common_traits {
             type Output = Self;
             #[inline(always)]
             fn div(self, other: $vecn) -> Self {
-                Self(self.0.div(other.0))
+                Self(self.0.div_vector(other.0))
             }
         }
 
         impl DivAssign<$vecn> for $vecn {
             #[inline(always)]
             fn div_assign(&mut self, other: $vecn) {
-                self.0 = self.0.div(other.0)
+                self.0 = self.0.div_vector(other.0)
             }
         }
 
@@ -551,7 +551,7 @@ macro_rules! impl_vecn_common_traits {
             type Output = $vecn;
             #[inline(always)]
             fn div(self, other: $vecn) -> $vecn {
-                $vecn($inner::splat(self).div(other.0))
+                $vecn($inner::splat(self).div_vector(other.0))
             }
         }
 
@@ -559,14 +559,14 @@ macro_rules! impl_vecn_common_traits {
             type Output = Self;
             #[inline(always)]
             fn mul(self, other: $vecn) -> Self {
-                Self(self.0.mul(other.0))
+                Self(self.0.mul_vector(other.0))
             }
         }
 
         impl MulAssign<$vecn> for $vecn {
             #[inline(always)]
             fn mul_assign(&mut self, other: $vecn) {
-                self.0 = self.0.mul(other.0)
+                self.0 = self.0.mul_vector(other.0)
             }
         }
 
@@ -589,7 +589,7 @@ macro_rules! impl_vecn_common_traits {
             type Output = $vecn;
             #[inline(always)]
             fn mul(self, other: $vecn) -> $vecn {
-                $vecn($inner::splat(self).mul(other.0))
+                $vecn($inner::splat(self).mul_vector(other.0))
             }
         }
 
@@ -597,14 +597,14 @@ macro_rules! impl_vecn_common_traits {
             type Output = Self;
             #[inline(always)]
             fn add(self, other: $vecn) -> Self {
-                Self(self.0.add(other.0))
+                Self(self.0.add_vector(other.0))
             }
         }
 
         impl AddAssign<$vecn> for $vecn {
             #[inline(always)]
             fn add_assign(&mut self, other: $vecn) {
-                self.0 = self.0.add(other.0)
+                self.0 = self.0.add_vector(other.0)
             }
         }
 
@@ -627,7 +627,7 @@ macro_rules! impl_vecn_common_traits {
             type Output = $vecn;
             #[inline(always)]
             fn add(self, other: $vecn) -> $vecn {
-                $vecn($inner::splat(self).add(other.0))
+                $vecn($inner::splat(self).add_vector(other.0))
             }
         }
 
@@ -635,14 +635,14 @@ macro_rules! impl_vecn_common_traits {
             type Output = Self;
             #[inline(always)]
             fn sub(self, other: $vecn) -> Self {
-                Self(self.0.sub(other.0))
+                Self(self.0.sub_vector(other.0))
             }
         }
 
         impl SubAssign<$vecn> for $vecn {
             #[inline(always)]
             fn sub_assign(&mut self, other: $vecn) {
-                self.0 = self.0.sub(other.0)
+                self.0 = self.0.sub_vector(other.0)
             }
         }
 
@@ -665,7 +665,7 @@ macro_rules! impl_vecn_common_traits {
             type Output = $vecn;
             #[inline(always)]
             fn sub(self, other: $vecn) -> $vecn {
-                $vecn($inner::splat(self).sub(other.0))
+                $vecn($inner::splat(self).sub_vector(other.0))
             }
         }
 
@@ -673,14 +673,14 @@ macro_rules! impl_vecn_common_traits {
             type Output = Self;
             #[inline(always)]
             fn rem(self, other: $vecn) -> Self {
-                Self(self.0.rem(other.0))
+                Self(self.0.rem_vector(other.0))
             }
         }
 
         impl RemAssign<$vecn> for $vecn {
             #[inline(always)]
             fn rem_assign(&mut self, other: $vecn) {
-                self.0 = self.0.rem(other.0)
+                self.0 = self.0.rem_vector(other.0)
             }
         }
 
@@ -703,7 +703,7 @@ macro_rules! impl_vecn_common_traits {
             type Output = $vecn;
             #[inline(always)]
             fn rem(self, other: $vecn) -> $vecn {
-                $vecn($inner::splat(self).rem(other.0))
+                $vecn($inner::splat(self).rem_vector(other.0))
             }
         }
 
@@ -781,7 +781,7 @@ macro_rules! impl_vecn_signed_traits {
             type Output = Self;
             #[inline(always)]
             fn neg(self) -> Self {
-                Self(self.0.neg())
+                Self(self.0.neg_vector())
             }
         }
     };

@@ -18,7 +18,7 @@ use core::arch::x86::*;
 #[cfg(all(
     target_arch = "x86_64",
     target_feature = "sse2",
-    not(feature = "scalar-math")
+    not(any(feature = "scalar-math", feature = "std-simd"))
 ))]
 use core::arch::x86_64::*;
 
@@ -510,7 +510,7 @@ macro_rules! impl_quat_traits {
             /// two quaternions! That corresponds to multiplication.
             #[inline]
             fn add(self, other: Self) -> Self {
-                Self(self.0.add(other.0))
+                Self(self.0.add_vector(other.0))
             }
         }
 
@@ -521,7 +521,7 @@ macro_rules! impl_quat_traits {
             /// The difference is not guaranteed to be normalized.
             #[inline]
             fn sub(self, other: Self) -> Self {
-                Self(self.0.sub(other.0))
+                Self(self.0.sub_vector(other.0))
             }
         }
 
@@ -688,14 +688,27 @@ macro_rules! impl_quat_traits {
     };
 }
 
-#[cfg(all(target_feature = "sse2", not(feature = "scalar-math")))]
+#[cfg(all(feature = "std-simd", not(feature = "scalar-math")))]
+type InnerF32 = std::simd::f32x4;
+
+#[cfg(all(
+    target_feature = "sse2",
+    not(any(feature = "scalar-math", feature = "std-simd"))
+))]
 type InnerF32 = __m128;
 
-#[cfg(all(target_feature = "simd128", not(feature = "scalar-math")))]
+#[cfg(all(
+    target_feature = "simd128",
+    not(any(feature = "scalar-math", feature = "std-simd"))
+))]
 type InnerF32 = v128;
 
 #[cfg(any(
-    not(any(target_feature = "sse2", target_feature = "simd128")),
+    not(any(
+        target_feature = "sse2",
+        target_feature = "simd128",
+        feature = "std-simd"
+    )),
     feature = "scalar-math"
 ))]
 type InnerF32 = crate::XYZW<f32>;

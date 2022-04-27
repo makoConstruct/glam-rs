@@ -92,8 +92,29 @@ pub trait Vector<T>: Sized + Copy + Clone {
     fn add(self, other: Self) -> Self;
     fn div(self, other: Self) -> Self;
     fn mul(self, other: Self) -> Self;
-    fn rem(self, rhs: Self) -> Self;
+    fn rem(self, other: Self) -> Self;
     fn sub(self, other: Self) -> Self;
+
+    #[inline(always)]
+    fn add_vector(self, other: Self) -> Self {
+        self.add(other)
+    }
+    #[inline(always)]
+    fn div_vector(self, other: Self) -> Self {
+        self.div(other)
+    }
+    #[inline(always)]
+    fn mul_vector(self, other: Self) -> Self {
+        self.mul(other)
+    }
+    #[inline(always)]
+    fn rem_vector(self, other: Self) -> Self {
+        self.rem(other)
+    }
+    #[inline(always)]
+    fn sub_vector(self, other: Self) -> Self {
+        self.sub(other)
+    }
 
     fn scale(self, other: T) -> Self {
         self.mul_scalar(other)
@@ -429,6 +450,10 @@ where
 /// not imply any dimensionality, the implementation does.
 pub trait SignedVector<T: SignedEx>: Vector<T> {
     fn neg(self) -> Self;
+    #[inline(always)]
+    fn neg_vector(self) -> Self {
+        self.neg()
+    }
 }
 
 /// Vector methods specific to 2D vectors of signed types.

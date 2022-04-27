@@ -94,12 +94,12 @@ pub(crate) fn f32x4_bitand(a: f32x4, b: f32x4) -> f32x4 {
     f32x4::from_bits(a.bitand(b))
 }
 
-#[inline(always)]
-pub(crate) fn f32x4_bitor(a: f32x4, b: f32x4) -> f32x4 {
-    let a = a.to_bits();
-    let b = b.to_bits();
-    f32x4::from_bits(a.bitor(b))
-}
+// #[inline(always)]
+// pub(crate) fn f32x4_bitor(a: f32x4, b: f32x4) -> f32x4 {
+//     let a = a.to_bits();
+//     let b = b.to_bits();
+//     f32x4::from_bits(a.bitor(b))
+// }
 
 #[inline(always)]
 pub(crate) fn f32x4_bitxor(a: f32x4, b: f32x4) -> f32x4 {
@@ -123,10 +123,10 @@ pub(crate) fn mask32x4_bitor(a: mask32x4, b: mask32x4) -> mask32x4 {
     a.bitor(b)
 }
 
-#[inline(always)]
-pub(crate) fn mask32x4_bitxor(a: mask32x4, b: mask32x4) -> mask32x4 {
-    a.bitxor(b)
-}
+// #[inline(always)]
+// pub(crate) fn mask32x4_bitxor(a: mask32x4, b: mask32x4) -> mask32x4 {
+//     a.bitxor(b)
+// }
 
 #[inline(always)]
 pub(crate) fn mask32x4_not(a: mask32x4) -> mask32x4 {
