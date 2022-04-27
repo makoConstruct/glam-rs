@@ -1,6 +1,6 @@
 use core::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Sub};
-use std::simd::{f32x4, mask32x4, ToBitMask};
 use std::simd::StdFloat;
+use std::simd::{f32x4, mask32x4, ToBitMask};
 
 #[inline(always)]
 pub(crate) fn f32x4_add(a: f32x4, b: f32x4) -> f32x4 {
